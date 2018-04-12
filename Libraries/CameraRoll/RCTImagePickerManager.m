@@ -22,6 +22,8 @@
 
 @end
 
+#import "RCTAssetsLibraryRequestHandler.h"
+
 @implementation RCTImagePickerManager
 {
   NSMutableArray<UIImagePickerController *> *_pickers;
