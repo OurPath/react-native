@@ -8,6 +8,8 @@
  *
  */
 
+#import <AssetsLibrary/AssetsLibrary.h>
+
 #import <React/RCTBridgeModule.h>
 
 @interface RCTImagePickerManager : NSObject <RCTBridgeModule>
