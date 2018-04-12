@@ -112,6 +112,29 @@ didFinishPickingMediaWithInfo:(NSDictionary<NSString *, id> *)info
   if (image) {
     height = @(image.size.height);
     width = @(image.size.width);
+    // ****** START hotfix ******
+    // 12-4-2018 @farhanmannan
+    // This is a hotfix for image orientation being wrong for photos picked from library
+    // Unfortunately it creates a duplicate of the image being sent in the user's photo library
+    // The following if statement is adapted from some Swift code in the native iOS app
+    if (image.imageOrientation != UIImageOrientationUp) {
+      UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale);
+      [image drawInRect:CGRectMake(0, 0, [width doubleValue], [height doubleValue])];
+      image = UIGraphicsGetImageFromCurrentImageContext();
+      UIGraphicsEndImageContext();
+    }
+    
+    // Save rotated image to REAL photo library, copied from RCTCameraRollManager.m, to get new asset URL
+    // (as opposed to saving to imageStoreManager, which gives no asset URL)
+    // TODO: rotate the image in place and save it so we can use the existing asset URL
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self->_bridge.assetsLibrary writeImageToSavedPhotosAlbum:image.CGImage metadata:nil completionBlock:^(NSURL *assetURL, NSError *saveError) {
+        [self _dismissPicker:picker args:@[assetURL.absoluteString, RCTNullIfNil(height), RCTNullIfNil(width)]];
+      }];
+    });
+    
+    return;
+    // ****** END hotfix ******
   }
   if (imageURL) {
     [self _dismissPicker:picker args:@[imageURL.absoluteString, RCTNullIfNil(height), RCTNullIfNil(width)]];
